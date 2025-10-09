@@ -694,7 +694,7 @@ bool GPS::setup()
             const std::vector<ChipInfo> responseMap = {
                 {"UM980", "UM980", GNSS_MODEL_UM980}
             };
-            GnssModel_t detectedDriver = getProbeResponse(1000, responseMap);
+            GnssModel_t detectedDriver = getProbeResponse(1000, responseMap, gnssBaudRate);
             const bool moduleIsRebooting = detectedDriver != GNSS_MODEL_UM980;
             if (moduleIsRebooting) {
                 LOG_DEBUG("UM980 SIGNALGROUP: module is rebooting after change");
@@ -1471,19 +1471,6 @@ GnssModel_t GPS::probe(int serialSpeed)
         currentDelay = 20;
         currentStep = 1;
         return GNSS_MODEL_UNKNOWN;
-    }
-    
-    
-    uint8_t cfg_rate[] = {0xB5, 0x62, 0x06, 0x08, 0x00, 0x00, 0x00, 0x00};
-    UBXChecksum(cfg_rate, sizeof(cfg_rate));
-    clearBuffer();
-    _serial_gps->write(cfg_rate, sizeof(cfg_rate));
-    // Check that the returned response class and message ID are correct
-    GPS_RESPONSE response = getACK(0x06, 0x08, 750);
-    if (response == GNSS_RESPONSE_NONE) {
-        LOG_WARN("No GNSS Module (baudrate %d)", serialSpeed);
-
-
     }
     case 1: {
 
