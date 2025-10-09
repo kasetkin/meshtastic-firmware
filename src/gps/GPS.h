@@ -17,6 +17,9 @@
 #define GPS_EN_ACTIVE 1
 #endif
 
+static constexpr uint32_t GPS_UPDATE_ALWAYS_ON_THRESHOLD_MS = 10 * 1000UL;
+static constexpr uint32_t GPS_FIX_HOLD_MAX_MS = 20000;
+
 typedef enum {
     GNSS_MODEL_ATGM336H,
     GNSS_MODEL_MTK,
@@ -33,6 +36,7 @@ typedef enum {
     GNSS_MODEL_AG3335,
     GNSS_MODEL_AG3352,
     GNSS_MODEL_LS20031,
+    GNSS_MODEL_CM121,
     GNSS_MODEL_UM980
 } GnssModel_t;
 
@@ -155,6 +159,8 @@ class GPS : private concurrency::OSThread
     uint8_t fixQual = 0; // fix quality from GPGGA
     uint32_t lastChecksumFailCount = 0;
     static constexpr int32_t MAX_THREAD_SLEEP_TIME_MS = 5000;
+    uint8_t currentStep = 0;
+    int32_t currentDelay = 2000;
 
 #ifndef TINYGPS_OPTION_NO_CUSTOM_FIELDS
     // (20210908) TinyGps++ can only read the GPGSA "FIX TYPE" field
@@ -195,8 +201,6 @@ class GPS : private concurrency::OSThread
      *   GPS location, valid and fresh (< gps_update_interval + position_broadcast_secs)
      */
     bool hasValidLocation = false; // default to false, until we complete our first read
-
-    bool isInPowersave = false;
 
     bool shouldPublish = false; // If we've changed GPS state, this will force a publish the next loop()
 
@@ -260,7 +264,7 @@ class GPS : private concurrency::OSThread
 
     virtual int32_t runOnce() override;
 
-    GnssModel_t getProbeResponse(unsigned long timeout, const std::vector<ChipInfo> &responseMap);
+    GnssModel_t getProbeResponse(unsigned long timeout, const std::vector<ChipInfo> &responseMap, int serialSpeed);
 
     // Get GNSS model
     GnssModel_t probe(int serialSpeed);
