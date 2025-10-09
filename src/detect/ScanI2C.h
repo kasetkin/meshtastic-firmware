@@ -14,6 +14,7 @@ class ScanI2C
         SCREEN_ST7567,
         RTC_RV3028,
         RTC_PCF8563,
+        RTC_RX8130CE,
         CARDKB,
         TDECKKB,
         BBQ10KB,
@@ -80,6 +81,7 @@ class ScanI2C
         LTR553ALS,
         BHI260AP,
         BMM150,
+        TSL2561,
         DRV2605
     } DeviceType;
 
