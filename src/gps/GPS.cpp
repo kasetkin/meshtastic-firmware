@@ -1432,6 +1432,9 @@ static const char *DETECTED_MESSAGE = "%s detected";
 
 GnssModel_t GPS::probe(int serialSpeed)
 {
+    /// TEST CODE /// TEST CODE /// TEST CODE ///
+    PMU->enablePowerOutput(XPOWERS_DCDC5);
+    /// TEST CODE /// TEST CODE /// TEST CODE ///
     uint8_t buffer[768] = {0};
 
     switch (currentStep) {
