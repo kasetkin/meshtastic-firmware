@@ -173,6 +173,7 @@ static void CASChecksum(uint8_t *message, size_t length)
 
 void GPS::logNmeaMessageToSd(const std::string &msg)
 {
+#ifdef GPS_DEBUG
     static const char * logsPath = "/logs";
 
     LOG_DEBUG("GPS->SdLoggerModule | message generation - start");
@@ -183,6 +184,7 @@ void GPS::logNmeaMessageToSd(const std::string &msg)
 
     const std::string fullpath = std::string(logsPath) + "/" + filename;
     sdLoggerModule->appendSDFile(fullpath.c_str(), fullLogMessage.c_str());
+#endif
 }
 
 // Function to create a ublox packet for editing in memory
