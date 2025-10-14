@@ -1166,7 +1166,7 @@ bool Power::axpChipInit()
         PMU->disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
 
         // Set the constant current charging current of AXP2101, temporarily use 500mA by default
-        PMU->setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+        PMU->setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_1000MA);
 
         // Set up the charging voltage
         PMU->setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V2);
