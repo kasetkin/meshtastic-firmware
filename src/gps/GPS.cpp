@@ -721,8 +721,12 @@ bool GPS::setup()
             _serial_gps->write("CONFIG PPP DATUM WGS84\r\n");
             delay(defaultDelay);
 
-            _serial_gps->write("CONFIG DGPS TIMEOUT 0\r\n");
+            /// Very dark horse, not much info in documentation. 
+            /// Probably, needs additional data from COM port.
+            /// Let's try to enable it. For now. Put value '0' to disable.
+            _serial_gps->write("CONFIG DGPS TIMEOUT 1800\r\n");
             delay(defaultDelay);
+
             _serial_gps->write("CONFIG MMP ENABLE\r\n");
             delay(defaultDelay);
             _serial_gps->write("CONFIG PVTALG MULTI\r\n");
@@ -737,7 +741,11 @@ bool GPS::setup()
             delay(defaultDelay);
             _serial_gps->write("CONFIG NMEA0183 V411\r\n");
             delay(defaultDelay);
-            _serial_gps->write("CONFIG SBAS DISABLE\r\n");
+
+            //_serial_gps->write("CONFIG SBAS DISABLE\r\n");
+            _serial_gps->write("CONFIG SBAS ENABLE Auto\r\n"); /// why not, if there is any in your region
+            delay(defaultDelay);
+            _serial_gps->write("CONFIG SBAS TIMEOUT 1800\r\n");
             delay(defaultDelay);
 
             _serial_gps->write("CONFIG STANDALONE ENABLE\r\n"); /// not sure if it's a good idea
@@ -775,6 +783,10 @@ bool GPS::setup()
             delay(defaultDelay);
             // _serial_gps->write("PPPDOPA \r\n");
             // delay(defaultDelay);
+
+            /// print ALL observations from antenna!!!
+            _serial_gps->write("OBSVMA 1\r\n");
+            delay(defaultDelay);
 
             _serial_gps->write("SAVECONFIG\r\n");
             delay(defaultDelay);
