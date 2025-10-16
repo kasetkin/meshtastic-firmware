@@ -785,8 +785,10 @@ bool GPS::setup()
             // delay(defaultDelay);
 
             /// print ALL observations from antenna!!!
-            _serial_gps->write("OBSVMA 1\r\n");
-            delay(defaultDelay);
+            /// TOO MANY symbols even at speed 115200,
+            /// \todo test with higher speed
+            //_serial_gps->write("OBSVMA 1\r\n");
+            //delay(defaultDelay);
 
             _serial_gps->write("SAVECONFIG\r\n");
             delay(defaultDelay);
