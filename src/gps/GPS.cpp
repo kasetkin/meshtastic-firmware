@@ -175,8 +175,9 @@ void GPS::logNmeaMessageToSd(const std::string &msg)
 {
 #ifdef GPS_NMEA_LOG
     static const char * logsPath = "/logs";
-
+#ifdef GPS_DEBUG
     LOG_DEBUG("GPS->SdLoggerModule | message generation - start");
+#endif
     sdLoggerModule->createSDDir(logsPath);
 
     const std::string filename = sdLoggerModule->generateFilename() + "_nmea.csv";
@@ -1980,17 +1981,14 @@ bool GPS::lookForLocation()
     if (localPPP.solutionStatus == PppSolutionStatus::SOL_COMPUTED) {
         LOG_DEBUG("Use PPP solution instead of default GNSS message");
 
-        //! \todo calculate distance between GNSS and PPP solutions
-
         p.latitude_i = localPPP.lat;
         p.longitude_i = localPPP.lon;
         p.altitude = localPPP.alt;
-        if (localPPP.positionType == PositionVelocityType::PPP) {
-            LOG_DEBUG("FINALLY!!! PPP");
-            p.HDOP = 1;
-            p.PDOP = 2;
-            p.VDOP = 3;
-        }
+        const float HDOPSqr = localPPP.latStdDev * localPPP.latStdDev
+                              + localPPP.lonStdDev * localPPP.lonStdDev;
+        p.VDOP = localPPP.altStdDev;
+        p.PDOP = std::sqrt(localPPP.altStdDev * localPPP.altStdDev + HDOPSqr);
+        p.HDOP = std::sqrt(HDOPSqr);
     }
 #else
     // FIXME! naive PDOP emulation (assumes VDOP==HDOP)
