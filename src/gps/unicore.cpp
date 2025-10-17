@@ -155,7 +155,7 @@ int32_t parseStationId(const char *str)
         cppStr = cppStr.substr(1, cppStr.size() - 2);
 
     const int32_t result = static_cast<int32_t>(std::atol(cppStr.c_str()));
-    LOG_DEBUG("parse StationId for PPP, input [%s], result is [%d]", str, result);
+    // LOG_DEBUG("parse StationId for PPP, input [%s], result is [%d]", str, result);
     return result;
 }
 
