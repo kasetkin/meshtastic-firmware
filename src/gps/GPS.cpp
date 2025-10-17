@@ -29,7 +29,7 @@
 #include <ctime>
 #endif
 
-#ifdef GPS_DEBUG
+#ifdef GPS_NMEA_LOG
 #include "modules/SdLoggerModule.h"
 #endif
 
@@ -173,7 +173,7 @@ static void CASChecksum(uint8_t *message, size_t length)
 
 void GPS::logNmeaMessageToSd(const std::string &msg)
 {
-#ifdef GPS_DEBUG
+#ifdef GPS_NMEA_LOG
     static const char * logsPath = "/logs";
 
     LOG_DEBUG("GPS->SdLoggerModule | message generation - start");
@@ -249,14 +249,14 @@ GPS_RESPONSE GPS::getACK(const char *message, uint32_t waitMillis)
     uint8_t b;
     int bytesRead = 0;
     uint32_t startTimeout = millis() + waitMillis;
-#ifdef GPS_DEBUG
+#if defined(GPS_DEBUG) || defined(GPS_NMEA_LOG)
     std::string debugmsg = "";
 #endif
     while (millis() < startTimeout) {
         if (_serial_gps->available()) {
             b = _serial_gps->read();
 
-#ifdef GPS_DEBUG
+#if defined(GPS_DEBUG) || defined(GPS_NMEA_LOG)
             debugmsg += vformat("%c", (b >= 32 && b <= 126) ? b : '.');
 #endif
             buffer[bytesRead] = b;
@@ -271,6 +271,8 @@ GPS_RESPONSE GPS::getACK(const char *message, uint32_t waitMillis)
                     bytesRead = 0;
 #ifdef GPS_DEBUG
                     LOG_DEBUG(debugmsg.c_str());
+#endif
+#ifdef GPS_NMEA_LOG
                     logNmeaMessageToSd(debugmsg);
 #endif
                 }
@@ -350,7 +352,7 @@ GPS_RESPONSE GPS::getACK(uint8_t class_id, uint8_t msg_id, uint32_t waitMillis)
     uint32_t startTime = millis();
     const char frame_errors[] = "More than 100 frame errors";
     int sCounter = 0;
-#ifdef GPS_DEBUG
+#if defined(GPS_DEBUG) || defined(GPS_NMEA_LOG)
     std::string debugmsg = "";
 #endif
 
@@ -378,8 +380,9 @@ GPS_RESPONSE GPS::getACK(uint8_t class_id, uint8_t msg_id, uint32_t waitMillis)
                 sCounter++;
                 if (sCounter == 26) {
 #ifdef GPS_DEBUG
-
                     LOG_DEBUG(debugmsg.c_str());
+#endif
+#ifdef GPS_NMEA_LOG
                     logNmeaMessageToSd(debugmsg);
 #endif
                     return GNSS_RESPONSE_FRAME_ERRORS;
@@ -387,7 +390,7 @@ GPS_RESPONSE GPS::getACK(uint8_t class_id, uint8_t msg_id, uint32_t waitMillis)
             } else {
                 sCounter = 0;
             }
-#ifdef GPS_DEBUG
+#if defined(GPS_DEBUG) || defined(GPS_NMEA_LOG)
             debugmsg += vformat("%02X", b);
 #endif
             if (b == buf[ack]) {
@@ -396,6 +399,8 @@ GPS_RESPONSE GPS::getACK(uint8_t class_id, uint8_t msg_id, uint32_t waitMillis)
                 if (ack == 3 && b == 0x00) { // UBX-ACK-NAK message
 #ifdef GPS_DEBUG
                     LOG_DEBUG(debugmsg.c_str());
+#endif
+#ifdef GPS_NMEA_LOG
                     logNmeaMessageToSd(debugmsg);
 #endif
                     LOG_WARN("Got NAK for class %02X message %02X", class_id, msg_id);
@@ -407,8 +412,10 @@ GPS_RESPONSE GPS::getACK(uint8_t class_id, uint8_t msg_id, uint32_t waitMillis)
     }
 #ifdef GPS_DEBUG
     LOG_DEBUG(debugmsg.c_str());
-    logNmeaMessageToSd(debugmsg);
     LOG_WARN("No response for class %02X message %02X", class_id, msg_id);
+#endif
+#ifdef GPS_NMEA_LOG
+    logNmeaMessageToSd(debugmsg);
 #endif
     return GNSS_RESPONSE_NONE; // No response received within timeout
 }
@@ -1964,8 +1971,8 @@ bool GPS::lookForLocation()
     uint32_t leapSecs = static_cast<uint32_t>(atol(pppnavLeapSecs.value()));
     localPPP.utxSeconds = computeUtxTime(week, millisOfWeek, leapSecs, localPPP.millisecs);
 
-    /// is it really?
-    /// because it is moving
+    /// does it really work that way?
+    /// because 
     // /// at this moment utxSeconds represents only moment when message was received,
     // /// so to get real time of PPP solution we need to compensate 'solution age'
     // localPPP.utxSeconds -= localPPP.solutionAge;
@@ -2069,7 +2076,7 @@ bool GPS::whileActive()
 {
     unsigned int charsInBuf = 0;
     bool isValid = false;
-#ifdef GPS_DEBUG
+#if defined(GPS_DEBUG) || defined(GPS_NMEA_LOG)
     std::string debugmsg = "";
 #endif
     if (powerState != GPS_ACTIVE) {
@@ -2086,7 +2093,7 @@ bool GPS::whileActive()
     while (_serial_gps->available() > 0) {
         int c = _serial_gps->read();
         UBXscratch[charsInBuf] = c;
-#ifdef GPS_DEBUG
+#if defined(GPS_DEBUG) || defined(GPS_NMEA_LOG)
         debugmsg += vformat("%c", ((c >= 32 && c <= 126) || (c == '\n') || (c == '\r')) ? c : '.');
 #endif
         isValid |= reader.encode(c);
@@ -2099,10 +2106,14 @@ bool GPS::whileActive()
             charsInBuf++;
         }
     }
+
+#ifdef GPS_NMEA_LOG
+    if (debugmsg.size() > 0)
+        logNmeaMessageToSd(debugmsg);
+#endif
+
 #ifdef GPS_DEBUG
     if (debugmsg.size() > 0) {
-        logNmeaMessageToSd(debugmsg);
-
         auto nextLineIter = std::string::npos;
         do {
             nextLineIter = debugmsg.find('\n');
@@ -2121,6 +2132,7 @@ bool GPS::whileActive()
 #endif
     return isValid;
 }
+
 void GPS::enable()
 {
     // Clear the old scheduling info (reset the lock-time prediction)

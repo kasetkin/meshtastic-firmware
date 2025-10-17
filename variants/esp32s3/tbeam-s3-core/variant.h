@@ -69,5 +69,6 @@
 #define USE_SH1106
 
 /// in GPS logger case doesn't really matter
-#define GPS_DEBUG
+// #define GPS_DEBUG
+#define GPS_NMEA_LOG
 // #define DEBUG_MUTE
