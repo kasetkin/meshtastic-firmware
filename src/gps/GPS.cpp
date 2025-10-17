@@ -1964,9 +1964,11 @@ bool GPS::lookForLocation()
     uint32_t leapSecs = static_cast<uint32_t>(atol(pppnavLeapSecs.value()));
     localPPP.utxSeconds = computeUtxTime(week, millisOfWeek, leapSecs, localPPP.millisecs);
 
-    /// at this moment utxSeconds represents only moment when message was received,
-    /// so to get real time of PPP solution we need to compensate 'solution age'
-    localPPP.utxSeconds -= localPPP.solutionAge;
+    /// is it really?
+    /// because it is moving
+    // /// at this moment utxSeconds represents only moment when message was received,
+    // /// so to get real time of PPP solution we need to compensate 'solution age'
+    // localPPP.utxSeconds -= localPPP.solutionAge;
 
     if (localPPP.solutionStatus == PppSolutionStatus::SOL_COMPUTED) {
         LOG_DEBUG("Use PPP solution instead of default GNSS message");
