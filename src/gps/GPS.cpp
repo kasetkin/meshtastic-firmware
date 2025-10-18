@@ -1978,18 +1978,19 @@ bool GPS::lookForLocation()
     // /// so to get real time of PPP solution we need to compensate 'solution age'
     // localPPP.utxSeconds -= localPPP.solutionAge;
 
-    if (localPPP.solutionStatus == PppSolutionStatus::SOL_COMPUTED) {
-        LOG_DEBUG("Use PPP solution instead of default GNSS message");
-
-        p.latitude_i = localPPP.lat;
-        p.longitude_i = localPPP.lon;
-        p.altitude = localPPP.alt;
-        const float HDOPSqr = localPPP.latStdDev * localPPP.latStdDev
-                              + localPPP.lonStdDev * localPPP.lonStdDev;
-        p.VDOP = localPPP.altStdDev;
-        p.PDOP = std::sqrt(localPPP.altStdDev * localPPP.altStdDev + HDOPSqr);
-        p.HDOP = std::sqrt(HDOPSqr);
-    }
+    /// this code is usefull if we want to see PPP location inside Mesh network and on the client (Android)
+    /// but if we want just to build GPX track from SD card after hiking, we don't need this
+    // if (localPPP.solutionStatus == PppSolutionStatus::SOL_COMPUTED) {
+    //     LOG_DEBUG("Use PPP solution instead of default GNSS message");
+    //     p.latitude_i = localPPP.lat;
+    //     p.longitude_i = localPPP.lon;
+    //     p.altitude = localPPP.alt;
+    //     const float HDOPSqr = localPPP.latStdDev * localPPP.latStdDev
+    //                           + localPPP.lonStdDev * localPPP.lonStdDev;
+    //     p.VDOP = localPPP.altStdDev;
+    //     p.PDOP = std::sqrt(localPPP.altStdDev * localPPP.altStdDev + HDOPSqr);
+    //     p.HDOP = std::sqrt(HDOPSqr);
+    // }
 #else
     // FIXME! naive PDOP emulation (assumes VDOP==HDOP)
     // correct formula is PDOP = SQRT(HDOP^2 + VDOP^2)
